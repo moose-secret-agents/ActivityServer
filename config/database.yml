@@ -1,0 +1,21 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host : localhost #else rake db:setup wont work
+  pool: 5
+  username: postgres
+  password: postgres
+
+development:
+  <<: *default
+  database: activity_server_development
+
+test:
+  <<: *default
+  database: activity_server_test
+
+production:
+  <<: *default
+  database: activity_server_production
+  username: activity_server
+  password: <%= ENV['activity_server_DATABASE_PASSWORD'] %>
