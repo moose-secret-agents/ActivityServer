@@ -11,10 +11,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151017120001) do
+ActiveRecord::Schema.define(version: 20151019190508) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "data_points", force: :cascade do |t|
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+    t.decimal  "lat"
+    t.string   "activity"
+    t.integer  "training_session_id"
+  end
+
+  add_index "data_points", ["training_session_id"], name: "index_data_points_on_training_session_id", using: :btree
+
+  create_table "training_sessions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "user_id"
+  end
+
+  add_index "training_sessions", ["user_id"], name: "index_training_sessions_on_user_id", using: :btree
 
   create_table "users", force: :cascade do |t|
     t.string   "username"
@@ -23,4 +41,5 @@ ActiveRecord::Schema.define(version: 20151017120001) do
     t.datetime "updated_at",      null: false
   end
 
+  add_foreign_key "training_sessions", "users"
 end
