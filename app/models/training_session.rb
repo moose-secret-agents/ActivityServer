@@ -22,7 +22,7 @@ class TrainingSession < ActiveRecord::Base
       self.distance += dist
 
       self.current_speed = dist/(data_point.created_at-dp.created_at).seconds
-      
+
       puts dist
       puts self.current_speed
     end
