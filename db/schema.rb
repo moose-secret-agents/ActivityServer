@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151019190508) do
+ActiveRecord::Schema.define(version: 20151021134342) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,14 +22,24 @@ ActiveRecord::Schema.define(version: 20151019190508) do
     t.decimal  "lat"
     t.string   "activity"
     t.integer  "training_session_id"
+    t.decimal  "long"
+    t.decimal  "elevation"
+    t.integer  "activity_certainty"
   end
 
   add_index "data_points", ["training_session_id"], name: "index_data_points_on_training_session_id", using: :btree
 
   create_table "training_sessions", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
     t.integer  "user_id"
+    t.decimal  "elevation_gain"
+    t.decimal  "distance"
+    t.integer  "duration"
+    t.string   "activity"
+    t.decimal  "avg_speed"
+    t.decimal  "current_speed"
+    t.integer  "training_points"
   end
 
   add_index "training_sessions", ["user_id"], name: "index_training_sessions_on_user_id", using: :btree
