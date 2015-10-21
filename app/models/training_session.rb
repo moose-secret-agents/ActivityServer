@@ -26,7 +26,6 @@ class TrainingSession < ActiveRecord::Base
       puts dist
       puts self.current_speed
     end
-
     self.save
   end
 end
