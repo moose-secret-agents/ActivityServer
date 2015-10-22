@@ -42,7 +42,7 @@ class TrainingSession < ActiveRecord::Base
         previous_point = sorted_points[index-1]
         activity_misses += 1 unless point.activity == self.activity
         next if activity_misses >= MIN_CHANGES
-
+        activity_misses = 0
         prev_long = previous_point.long
         prev_lat = previous_point.lat
         long_dist = (point.long - prev_long).abs
@@ -51,7 +51,7 @@ class TrainingSession < ActiveRecord::Base
         self.distance += dist
 
         time_elapsed = point.created_at - previous_point.created_at
-        duration += time_elapsed
+        self.duration += time_elapsed
 
         self.avg_speed = self.distance / self.duration
 
