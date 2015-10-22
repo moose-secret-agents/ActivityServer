@@ -16,7 +16,8 @@ class DataPointsController < ApplicationController
                   duration: @session.duration,
                   activity: @session.activity,
                   avg_speed: @session.avg_speed,
-                  current_speed: @session.current_speed}
+                  current_speed: @session.current_speed,
+                  elevation_gain: @session.elevation_gain}
   end
 
   private
