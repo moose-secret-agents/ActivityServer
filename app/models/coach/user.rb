@@ -24,6 +24,13 @@ module Coach
       put "/users/#{username}", body: attributes
     end
 
+    def self.authenticate(username, password)
+      auth = { username: username, password: password }
+      response = get "/authenticateduser", basic_auth: auth
+      #puts response.to_s
+      response.code == 200 ? Coach::User.new(JSON.parse(response.body)) : nil
+    end
+
     # Update user
     def self.update(username, password, attributes={})
       auth = { username: username, password: password }

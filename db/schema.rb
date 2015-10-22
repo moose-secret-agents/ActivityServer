@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151021134342) do
+ActiveRecord::Schema.define(version: 20151022124015) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -35,11 +35,13 @@ ActiveRecord::Schema.define(version: 20151021134342) do
     t.integer  "user_id"
     t.decimal  "elevation_gain"
     t.decimal  "distance"
-    t.integer  "duration"
+    t.decimal  "duration"
     t.string   "activity"
     t.decimal  "avg_speed"
     t.decimal  "current_speed"
     t.integer  "training_points"
+    t.integer  "cycling_count"
+    t.integer  "running_count"
   end
 
   add_index "training_sessions", ["user_id"], name: "index_training_sessions_on_user_id", using: :btree
