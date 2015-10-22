@@ -50,14 +50,21 @@ class TrainingSession < ActiveRecord::Base
         dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
         self.distance += dist
 
+        prev_elev = previous_point.elevation
+        self.elevation_gain += point.elevation - previous_point.elevation if point.elevation > previous_point.elevation and previous_point.elevation != 0
+
+        self.training_points = self.distance
+
+        self.training_points += (self.elevation_gain * 3)
+
+        self.training_points *=2 if(self.activity=="RUNNING")
+
         time_elapsed = point.created_at - previous_point.created_at
         self.duration += time_elapsed
 
         self.avg_speed = self.distance / self.duration
 
-        prev_elev = previous_point.elevation
-        self.elevation_gain += point.elevation - previous_point.elevation if point.elevation > previous_point.elevation and previous_point.elevation != 0
-      end
+        end
 
       self.current_speed = dist/(data_point.created_at-dp.created_at).seconds
 
