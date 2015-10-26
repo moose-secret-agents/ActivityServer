@@ -2,6 +2,16 @@ class TrainingSession < ActiveRecord::Base
   has_many :data_points
   EARTH_CIRCUMFERENCE = 6371000 * 2 * Math::PI#radius of earth in meters
   MIN_CHANGES = 3
+  def conclude(username,password)
+    act = "cycling"
+    if self.activity == "RUNNING"
+      act = "running"
+    end
+    entrytype = "entry#{act}"
+    attributes = {entrytype=> {entryduration: self.duration.to_i, publicvisible: 1, courselength: self.distance.to_i}}
+    entry = Coach::Entry.create(username,password, act,attributes)
+    entry
+  end
   def add_point (long, lat, elevation, activity, activity_certainty)
     sorted_points = data_points.sort_by {|dp| dp.created_at}
     data_point = data_points.new(long: long, lat: lat, elevation: elevation, activity:activity, activity_certainty:activity_certainty)
