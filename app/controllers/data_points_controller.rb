@@ -11,7 +11,8 @@ class DataPointsController < ApplicationController
     lat = data.find{|d| d['type']=='location'}['latitude']
     long = data.find{|d| d['type']=='location'}['longitude']
     elevation = data.find{|d| d['type']=='location'}['elevation']
-    @session.add_point(long, lat, elevation, activity, activity_certainty)
+    timestamp = DateTime.parse(data.find{|d| d['type']=='location'}['timestamp'])
+    @session.add_point(long, lat, elevation, activity, activity_certainty,timestamp)
     render json: {distance: @session.distance,
                   duration: @session.duration,
                   activity: @session.activity,

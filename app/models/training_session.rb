@@ -12,9 +12,9 @@ class TrainingSession < ActiveRecord::Base
     entry = Coach::Entry.create(username,password, act,attributes)
     entry
   end
-  def add_point (long, lat, elevation, activity, activity_certainty)
+  def add_point (long, lat, elevation, activity, activity_certainty, timestamp)
     sorted_points = data_points.sort_by {|dp| dp.created_at}
-    data_point = data_points.new(long: long, lat: lat, elevation: elevation, activity:activity, activity_certainty:activity_certainty)
+    data_point = data_points.new(long: long, lat: lat, elevation: elevation, activity:activity, activity_certainty:activity_certainty, created_at: timestamp)
     if(data_points.count == 0)
       self.elevation_gain = 0
       self.distance = 0
@@ -36,7 +36,7 @@ class TrainingSession < ActiveRecord::Base
       long_dist = (data_point.long - dp.long).abs
       lat_dist = (data_point.lat - dp.lat).abs
       dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
-
+      self.current_speed = dist/(data_point.created_at-dp.created_at).seconds
       activity_misses = 0
       tracking = false
 
@@ -44,7 +44,7 @@ class TrainingSession < ActiveRecord::Base
       self.distance = 0
       self.duration = 0
       self.avg_speed = 0
-      self.current_speed = 0
+      #self.current_speed = 0
 
       sorted_points.each do |point|
         next if sorted_points.index(point) == 0
@@ -73,10 +73,9 @@ class TrainingSession < ActiveRecord::Base
         self.duration += time_elapsed
 
         self.avg_speed = self.distance / self.duration
+      end
 
-        end
 
-      self.current_speed = dist/(data_point.created_at-dp.created_at).seconds
 
     end
     self.save
