@@ -8,7 +8,7 @@ class TrainingSession < ActiveRecord::Base
       act = "running"
     end
     entrytype = "entry#{act}"
-    attributes = {entrytype=> {entryduration: self.duration.to_i, publicvisible: 1, courselength: self.distance.to_i, numberofrounds: self.training_points}}
+    attributes = {entrytype=> {entryduration: self.duration.to_i, publicvisible: 2, courselength: self.distance.to_i, numberofrounds: self.training_points}}
     entry = Coach::Entry.create(username,password, act,attributes)
     entry
   end
