@@ -55,9 +55,19 @@ class TrainingSession < ActiveRecord::Base
         activity_misses = 0
         prev_long = previous_point.long
         prev_lat = previous_point.lat
-        long_dist = (point.long - prev_long).abs
-        lat_dist = (point.lat - prev_lat).abs
+        long_dist = point.long - prev_long
+        lat_dist = point.lat - prev_lat
         dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
+        max_allowed_speed = 1.5*(self.avg_speed+2)
+        ratio = current_speed/max_allowed_speed
+        if ratio > 1
+          point.long = 1/ratio * long_dist + prev_long
+          point.lat = 1/ratio * lat_dist + prev_lat
+
+          long_dist = point.long - prev_long
+          lat_dist = point.lat - prev_lat
+          dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
+        end
         self.distance += dist
 
         prev_elev = previous_point.elevation
@@ -74,8 +84,6 @@ class TrainingSession < ActiveRecord::Base
 
         self.avg_speed = self.distance / self.duration
       end
-
-
 
     end
     self.save
