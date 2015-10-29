@@ -44,9 +44,11 @@ class TrainingSession < ActiveRecord::Base
       self.distance = 0
       self.duration = 0
       self.avg_speed = 0
+      positionlist = []
       #self.current_speed = 0
 
       sorted_points.each do |point|
+        positionlist << {lat: point.lat, long: point.long}
         next if sorted_points.index(point) == 0
         index = sorted_points.index(point)
         previous_point = sorted_points[index-1]
@@ -58,15 +60,19 @@ class TrainingSession < ActiveRecord::Base
         long_dist = point.long - prev_long
         lat_dist = point.lat - prev_lat
         dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
-        max_allowed_speed = 1.5*(self.avg_speed+2)
-        ratio = current_speed/max_allowed_speed
-        if ratio > 1
-          point.long = 1/ratio * long_dist + prev_long
-          point.lat = 1/ratio * lat_dist + prev_lat
-
-          long_dist = point.long - prev_long
-          lat_dist = point.lat - prev_lat
-          dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
+        if point==dp
+          max_allowed_speed = 1.1*self.current_speed + 1
+          ratio = current_speed/max_allowed_speed
+          puts "max_allowed_speed: #{max_allowed_speed}, current_speed: #{current_speed}, olddist: #{dist}, ratio: #{ratio}"
+          if ratio > 1
+            point.long = 1/ratio * long_dist + prev_long
+            point.lat = 1/ratio * lat_dist + prev_lat
+            long_dist = point.long - prev_long
+            lat_dist = point.lat - prev_lat
+            point.save
+            dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
+            puts "newdist: #{dist}"
+          end
         end
         self.distance += dist
 
@@ -85,6 +91,53 @@ class TrainingSession < ActiveRecord::Base
         self.avg_speed = self.distance / self.duration
       end
 
+
+      alternate_dist = 0
+      if positionlist.length > 4
+        for i in 0..positionlist.length-4 do
+          pos = positionlist[i]
+          lat = pos[:lat]
+          long = pos[:long]
+          refPos = positionlist[i+3]
+          reflat = refPos[:lat]
+          reflong = refPos[:long]
+          refheading = {long: reflong-long,lat:reflat-lat}
+
+          nextPos = positionlist[i+1]
+          nextlat = nextPos[:lat]
+          nextlong = nextPos[:long]
+          nextheading = {long: nextlong-long,lat:nextlat-lat}
+          dotpro = nextheading[:long]*refheading[:long] + nextheading[:lat]*refheading[:lat]
+          interlat = dotpro * refheading[:lat] + lat
+          interlong = dotpro * refheading[:long] + long
+          nextPos[:lat] = ((interlat + nextlat)/2).round(10)
+          nextPos[:long] = ((interlong + nextlong)/2).round(10)
+
+          puts "nextPos: lat: #{nextPos[:lat]}, long: #{nextPos[:long]}"
+
+          nextPos = positionlist[i+2]
+          nextlat = nextPos[:lat]
+          nextlong = nextPos[:long]
+          nextheading = {long: nextlong-long,lat:nextlat-lat}
+          dotpro = nextheading[:long]*refheading[:long] + nextheading[:lat]*refheading[:lat]
+          interlat = dotpro * refheading[:lat] + lat
+          interlong = dotpro * refheading[:long] + long
+          nextPos[:lat] = ((interlat + nextlat)/2).round(10)
+          nextPos[:long] = ((interlong + nextlong)/2).round(10)
+
+          puts "nextPos: lat: #{nextPos[:lat]}, long: #{nextPos[:long]}"
+        end
+        for i in 1..positionlist.length-1 do
+          long = positionlist[i][:long]-positionlist[i-1][:long]
+          lat = positionlist[i][:lat]-positionlist[i-1][:lat]
+          dist = Math.sqrt(long*long + lat*lat)/360*EARTH_CIRCUMFERENCE
+          alternate_dist +=dist
+        end
+        puts "SMOOTHED DISTANCE: #{alternate_dist}"
+        self.distance = alternate_dist
+        self.avg_speed = self.distance / self.duration
+        self.save
+      end
     end
     self.save
   end
