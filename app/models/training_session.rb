@@ -40,9 +40,9 @@ class TrainingSession < ActiveRecord::Base
       self.cycling_count+=1 if data_point.activity == 'ON_BICYCLE'
       self.activity = self.running_count>self.cycling_count ? 'RUNNING' : 'ON_BICYCLE'
 
-      long_dist = (data_point.long - dp.long).abs
-      lat_dist = (data_point.lat - dp.lat).abs
-      dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
+      long_dist = calcLongDist(data_point.long - dp.long)
+      lat_dist = calcLatDist(data_point.lat - dp.lat, dp.lat)
+      dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
       self.current_speed = dist/(data_point.created_at-dp.created_at).seconds
       activity_misses = 0
       tracking = false
@@ -64,20 +64,28 @@ class TrainingSession < ActiveRecord::Base
         activity_misses = 0
         prev_long = previous_point.long
         prev_lat = previous_point.lat
-        long_dist = point.long - prev_long
-        lat_dist = point.lat - prev_lat
-        dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
+
+        long_dist = calcLongDist(point.long - prev_long)
+        lat_dist = calcLatDist(point.lat - prev_lat, point.lat)
+        dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
+
+
         if point==dp
           max_allowed_speed = 1.1*self.current_speed + 1
           ratio = current_speed/max_allowed_speed
           puts "max_allowed_speed: #{max_allowed_speed}, current_speed: #{current_speed}, olddist: #{dist}, ratio: #{ratio}"
           if ratio > 1
-            point.long = 1/ratio * long_dist + prev_long
-            point.lat = 1/ratio * lat_dist + prev_lat
-            long_dist = point.long - prev_long
-            lat_dist = point.lat - prev_lat
+            long_diff = point.long - prev_long
+            lat_diff = point.lat - prev_lat
+            point.long = 1/ratio * long_diff + prev_long
+            point.lat = 1/ratio * lat_diff + prev_lat
+
             point.save
-            dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)/360*EARTH_CIRCUMFERENCE
+
+            long_dist = calcLongDist(point.long - prev_long)
+            lat_dist = calcLatDist(point.lat - prev_lat, point.lat)
+            dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
+
             puts "newdist: #{dist}"
           end
         end
@@ -135,9 +143,10 @@ class TrainingSession < ActiveRecord::Base
           puts "nextPos: lat: #{nextPos[:lat]}, long: #{nextPos[:long]}"
         end
         for i in 1..positionlist.length-1 do
-          long = positionlist[i][:long]-positionlist[i-1][:long]
-          lat = positionlist[i][:lat]-positionlist[i-1][:lat]
-          dist = Math.sqrt(long*long + lat*lat)/360*EARTH_CIRCUMFERENCE
+          long_dist = calcLongDist(positionlist[i][:long]-positionlist[i-1][:long])
+          lat_dist = calcLatDist(positionlist[i][:lat]-positionlist[i-1][:lat], positionlist[i][:lat])
+          dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
+
           alternate_dist +=dist
         end
         puts "SMOOTHED DISTANCE: #{alternate_dist}"
@@ -148,6 +157,14 @@ class TrainingSession < ActiveRecord::Base
     end
     self.save
   end
+  private
+    def calcLongDist(distance)
+      (distance).abs / 360 * EARTH_CIRCUMFERENCE
+    end
+
+    def calcLatDist(distance, latitude)
+      (distance).abs / 360 * Math.cos(90-latitude)
+    end
 end
 
 
