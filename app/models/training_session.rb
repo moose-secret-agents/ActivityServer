@@ -40,8 +40,8 @@ class TrainingSession < ActiveRecord::Base
       self.cycling_count+=1 if data_point.activity == 'ON_BICYCLE'
       self.activity = self.running_count>self.cycling_count ? 'RUNNING' : 'ON_BICYCLE'
 
-      long_dist = calcLongDist(data_point.long - dp.long)
-      lat_dist = calcLatDist(data_point.lat - dp.lat, dp.lat)
+      long_dist = calcLongDist(data_point.long - dp.long, dp.lat)
+      lat_dist = calcLatDist(data_point.lat - dp.lat)
       dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
       self.current_speed = dist/(data_point.created_at-dp.created_at).seconds
       activity_misses = 0
@@ -65,8 +65,8 @@ class TrainingSession < ActiveRecord::Base
         prev_long = previous_point.long
         prev_lat = previous_point.lat
 
-        long_dist = calcLongDist(point.long - prev_long)
-        lat_dist = calcLatDist(point.lat - prev_lat, point.lat)
+        long_dist = calcLongDist(point.long - prev_long, point.lat)
+        lat_dist = calcLatDist(point.lat - prev_lat)
         dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
 
 
@@ -82,8 +82,8 @@ class TrainingSession < ActiveRecord::Base
 
             point.save
 
-            long_dist = calcLongDist(point.long - prev_long)
-            lat_dist = calcLatDist(point.lat - prev_lat, point.lat)
+            long_dist = calcLongDist(point.long - prev_long,point.lat)
+            lat_dist = calcLatDist(point.lat - prev_lat)
             dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
 
             puts "newdist: #{dist}"
