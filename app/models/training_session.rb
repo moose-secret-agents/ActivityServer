@@ -163,7 +163,7 @@ class TrainingSession < ActiveRecord::Base
     end
 
     def calcLatDist(distance, latitude)
-      (distance).abs / 360 * Math.cos(90-latitude)
+      (distance).abs / 360 * Math.cos((90-latitude)/180 * Math::PI)
     end
 end
 
