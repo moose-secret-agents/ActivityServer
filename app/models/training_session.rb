@@ -143,8 +143,8 @@ class TrainingSession < ActiveRecord::Base
           puts "nextPos: lat: #{nextPos[:lat]}, long: #{nextPos[:long]}"
         end
         for i in 1..positionlist.length-1 do
-          long_dist = calcLongDist(positionlist[i][:long]-positionlist[i-1][:long])
-          lat_dist = calcLatDist(positionlist[i][:lat]-positionlist[i-1][:lat], positionlist[i][:lat])
+          long_dist = calcLongDist(positionlist[i][:long]-positionlist[i-1][:long],positionlist[i][:lat] )
+          lat_dist = calcLatDist(positionlist[i][:lat]-positionlist[i-1][:lat],)
           dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
 
           alternate_dist +=dist
@@ -157,13 +157,13 @@ class TrainingSession < ActiveRecord::Base
     end
     self.save
   end
-  private
-    def calcLongDist(distance)
+ # private
+    def calcLatDist(distance)
       (distance).abs / 360 * EARTH_CIRCUMFERENCE
     end
 
-    def calcLatDist(distance, latitude)
-      (distance).abs / 360 * Math.cos((90-latitude)/180 * Math::PI)
+    def calcLongDist(distance, latitude)
+      (distance).abs / 360 * Math.cos((90-latitude)/180 * Math::PI) * EARTH_CIRCUMFERENCE
     end
 end
 
