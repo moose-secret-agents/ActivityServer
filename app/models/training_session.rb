@@ -94,11 +94,7 @@ class TrainingSession < ActiveRecord::Base
         prev_elev = previous_point.elevation
         self.elevation_gain += point.elevation - previous_point.elevation if point.elevation > previous_point.elevation and previous_point.elevation != 0
 
-        self.training_points = self.distance
 
-        self.training_points += (self.elevation_gain * 3)
-
-        self.training_points *=2 if(self.activity=="RUNNING")
 
         time_elapsed = point.created_at - previous_point.created_at
         self.duration += time_elapsed
@@ -154,6 +150,11 @@ class TrainingSession < ActiveRecord::Base
         self.avg_speed = self.distance / self.duration
         self.save
       end
+      self.training_points = self.distance
+
+      self.training_points += (self.elevation_gain * 3)
+
+      self.training_points *=2 if(self.activity=="RUNNING")
     end
     self.save
   end
