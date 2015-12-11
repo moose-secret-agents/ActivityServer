@@ -159,7 +159,8 @@ class TrainingSession < ActiveRecord::Base
       end
       self.training_points = self.distance
 
-      self.training_points += (self.elevation_gain * 3)
+      #was too unreliable
+      #self.training_points += (self.elevation_gain * 3)
 
       self.training_points *=2 if(self.activity=="RUNNING")
     end
