@@ -55,7 +55,7 @@ class TrainingSession < ActiveRecord::Base
       #self.current_speed = 0
 
       sorted_points.each do |point|
-        positionlist << {lat: point.lat, long: point.long}
+        positionlist << {lat: point.lat, long: point.long, activity:point.activity}
         next if sorted_points.index(point) == 0
         index = sorted_points.index(point)
         previous_point = sorted_points[index-1]
@@ -143,7 +143,7 @@ class TrainingSession < ActiveRecord::Base
           lat_dist = calcLatDist(positionlist[i][:lat]-positionlist[i-1][:lat],)
           dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
 
-          alternate_dist +=dist
+          alternate_dist += dist if positionlist[i][:activity] == self.activity
         end
         puts "SMOOTHED DISTANCE: #{alternate_dist}"
         self.distance = alternate_dist
