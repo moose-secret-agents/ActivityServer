@@ -39,7 +39,7 @@ class TrainingSession < ActiveRecord::Base
       self.running_count+=1 if data_point.activity == 'RUNNING'
       self.cycling_count+=1 if data_point.activity == 'ON_BICYCLE'
       self.activity = self.running_count>self.cycling_count ? 'RUNNING' : 'ON_BICYCLE'
-
+      self.save
       long_dist = calcLongDist(data_point.long - dp.long, dp.lat)
       lat_dist = calcLatDist(data_point.lat - dp.lat)
       dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
