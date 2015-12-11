@@ -64,11 +64,15 @@ class TrainingSession < ActiveRecord::Base
 
         if activity_misses >= MIN_CHANGES
           positionlist << {lat: point.lat, long: point.long, activity:point.activity}
-          next
+          puts "not using point with act: #{point.activity}"
         else
+          puts "using point with act: #{point.activity}"
+          puts "self.activity: #{self.activity}, activity_misses: #{activity_misses}"
           positionlist << {lat: point.lat, long: point.long, activity:self.activity}
         end
-        activity_misses = 0
+        self.save
+        next if point.activity!=self.activity
+
         prev_long = previous_point.long
         prev_lat = previous_point.lat
 
@@ -106,7 +110,7 @@ class TrainingSession < ActiveRecord::Base
         time_elapsed = point.created_at - previous_point.created_at
         self.duration += time_elapsed
 
-        self.avg_speed = self.distance / self.duration
+        self.avg_speed = self.duration == 0 ? 0 : self.distance / self.duration
       end
 
 
@@ -151,10 +155,11 @@ class TrainingSession < ActiveRecord::Base
           dist = Math.sqrt(long_dist*long_dist + lat_dist*lat_dist)
 
           alternate_dist += dist if positionlist[i][:activity] == self.activity
+          puts "used point #{positionlist[i][:activity]}" if positionlist[i][:activity] == self.activity
         end
         puts "SMOOTHED DISTANCE: #{alternate_dist}"
         self.distance = alternate_dist
-        self.avg_speed = self.distance / self.duration
+        self.avg_speed = self.duration == 0 ? 0 : self.distance / self.duration
         self.save
       end
       self.training_points = self.distance
