@@ -55,12 +55,19 @@ class TrainingSession < ActiveRecord::Base
       #self.current_speed = 0
 
       sorted_points.each do |point|
-        positionlist << {lat: point.lat, long: point.long, activity:point.activity}
         next if sorted_points.index(point) == 0
         index = sorted_points.index(point)
         previous_point = sorted_points[index-1]
+
+        activity_misses = 0 if point.activity == self.activity
         activity_misses += 1 unless point.activity == self.activity
-        next if activity_misses >= MIN_CHANGES
+
+        if activity_misses >= MIN_CHANGES
+          positionlist << {lat: point.lat, long: point.long, activity:point.activity}
+          next
+        else
+          positionlist << {lat: point.lat, long: point.long, activity:self.activity}
+        end
         activity_misses = 0
         prev_long = previous_point.long
         prev_lat = previous_point.lat
